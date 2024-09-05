@@ -1,4 +1,4 @@
-local net = require("internet")
+local mqtt = {}
 
 local read_varint = function (conn, first_byte)
 	local b
@@ -26,10 +26,10 @@ local read_varint = function (conn, first_byte)
 	return n + (b << s), nil
 end
 
-local MqttClient
+local MqttClient = {}
 
-function open (address, port)
-	local conn = net.open(address, port)
+function mqtt.open (address, port)
+	local conn = require("internet").open(address, port)
 	if conn == nil then
 		return nil, "connection failed"
 	end
@@ -171,3 +171,5 @@ function MqttClient:disconnect (reason)
 
 	return nil
 end
+
+return mqtt
