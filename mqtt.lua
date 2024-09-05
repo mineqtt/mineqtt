@@ -1,6 +1,6 @@
 local mqtt = {}
 
-local read_varint = function (conn, first_byte)
+local readVarint = function (conn, first_byte)
     local b
     if first_byte == nil then
         b = conn:read(1)
@@ -42,7 +42,7 @@ function MqttClient:new (conn)
     setmetatable(c, self)
     self.__index = self
 
-    conn.read_varint = read_varint
+    conn.readVarint = readVarint
     conn:setTimeout(1)
 
     c.conn = conn
@@ -60,7 +60,7 @@ function MqttClient:handle ()
 
     local ptype, length, _ = string.unpack("B B", s)
 
-    local length, err = self.conn:read_varint(length)
+    local length, err = self.conn:readVarint(length)
     if err ~= nil then
         return err
     end
