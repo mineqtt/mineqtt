@@ -10,27 +10,33 @@ local safeRead = function (conn, n)
 end
 
 local readVarint = function (conn, first_byte)
-    local b, err
+    local b, data, err
     if first_byte == nil then
-        b, err = safeRead(conn, 1)
+        data, err = safeRead(conn, 1)
+        if err ~= nil then
+            return nil, err
+        end
+
+        b = string.byte(data)
     else
         b = first_byte
     end
 
     local n, s = 0, 0
-    while err == nil and b & 0x80 == 0x80 do
+    while b & 0x80 == 0x80 do
         if s > 21 then
-            return 0, "number too large"
+            return nil, "number too large"
         end
 
         n = n + ((b & 0x7F) << s)
         s = s + 7
 
-        b, err = safeRead(conn, 1)
-    end
+        data, err = safeRead(conn, 1)
+        if err ~= nil then
+            return nil, err
+        end
 
-    if err ~= nil then
-        return n, err
+        b = string.byte(data)
     end
 
     return n + (b << s), nil
