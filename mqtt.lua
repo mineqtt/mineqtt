@@ -29,9 +29,9 @@ end
 local MqttClient = {}
 
 function mqtt.open (address, port)
-    local conn = require("internet").open(address, port)
+    local conn, err = require("internet").open(address, port)
     if conn == nil then
-        return nil, "connection failed"
+        return nil, err
     end
 
     return MqttClient:new(conn), nil
