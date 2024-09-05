@@ -42,6 +42,20 @@ local readVarint = function (conn, first_byte)
     return n + (b << s), nil
 end
 
+local encodeVarint = function (n)
+    if n > 268435455 then
+        return nil, "number too large"
+    end
+
+    local data = ""
+    while n > 127 do
+        data = data .. string.char(0x80 | n & 0x7F)
+        n = n >> 7
+    end
+
+    return data .. string.char(n), nil
+end
+
 local MqttClient = {}
 
 function mqtt.open (address, port)
