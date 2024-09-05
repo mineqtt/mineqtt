@@ -2,6 +2,18 @@
 
 ## Installation
 
+### via OPPM
+
+```
+oppm register lujoga/oppm
+```
+
+```
+oppm install mqtt
+```
+
+### via interactive Lua shell
+
 ```lua
 local net = require("internet"); local io = require("io"); local f = io.open("/lib/mqtt.lua", "w"); for line in net.request("https://git.luj0ga.de/luca/mineqtt/raw/branch/main/mqtt.lua") do f:write(line) end; f:flush():close()
 ```
