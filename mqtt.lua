@@ -200,6 +200,35 @@ function MqttClient:connect (username, password)
     return nil
 end
 
+function MqttClient:publish (topic, payload)
+    if not (self.is_connecting or self.is_connected) then
+        return "no connection"
+    end
+
+    if not topic or #topic == 0 then
+        return "topic is required"
+    end
+    if not payload then
+        payload = ""
+    end
+
+    local flags = 0
+    local length = 3 + #topic + #payload
+    local data = string.char(0x30 | flags) .. encodeVarint(length) .. string.pack("> s2 B", topic, 0) .. payload
+
+    local _, err = self.conn:write(data)
+    if err ~= nil then
+        return err
+    end
+
+    local _, err = self.conn:flush()
+    if err ~= nil then
+        return err
+    end
+
+    return nil
+end
+
 function MqttClient:disconnect (reason)
     if not (self.is_connecting or self.is_connected) then
         return "no connection"
