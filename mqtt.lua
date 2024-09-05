@@ -69,7 +69,7 @@ function MqttClient:handle ()
         return err
     end
 
-    local ptype, length, _ = string.unpack("B B", s)
+    local ptype, length, _ = string.unpack("B B", data)
 
     local length, err = self.conn:readVarint(length)
     if err ~= nil then
@@ -127,8 +127,8 @@ function MqttClient:connect (username, password)
         return nil
     end
 
-    local length = 15
-    local flags = 1
+    local length = 13
+    local flags = 2
     if username ~= nil then
         length = length + 2 + #username
         flags = flags | 0x80
