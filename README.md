@@ -28,6 +28,11 @@ end
 
 print(client.is_connected)
 
+local err = client:publish("test", "Test Message Please Ignore")
+if err ~= nil then
+    error(err)
+end
+
 local err = client:disconnect()
 if err ~= nil then
     error(err)
