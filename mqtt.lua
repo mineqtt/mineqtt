@@ -84,6 +84,10 @@ function MqttClient:new (conn)
 end
 
 function MqttClient:handle ()
+    if not (self.is_connecting or self.is_connected) then
+        return "no connection"
+    end
+
     local data, err = self.conn:safeRead(2)
     if err ~= nil then
         return err
@@ -159,7 +163,7 @@ end
 
 function MqttClient:connect (username, password)
     if self.is_connecting or self.is_connected then
-        return nil
+        return "already connected"
     end
 
     local length = 13
@@ -198,7 +202,7 @@ end
 
 function MqttClient:disconnect (reason)
     if not (self.is_connecting or self.is_connected) then
-        return nil
+        return "no connection"
     end
 
     if reason == nil then
