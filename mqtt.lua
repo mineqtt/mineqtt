@@ -131,12 +131,27 @@ function MqttClient:handle ()
 
         self.is_connecting = false
         self.is_connected = true
-    elseif ptype == 0x40 then -- PUBACK
+    elseif ptype & 0xF0 == 0x40 then -- PUBACK
         -- TODO
-    elseif ptype == 0xD0 then -- PINGRESP
+    elseif ptype & 0xF0 == 0xD0 then -- PINGRESP
         -- TODO
-    elseif ptype == 0xE0 then -- DISCONNECT
-        -- TODO
+    elseif ptype & 0xF0 == 0xE0 then -- DISCONNECT
+        if ptype ~= 0xE0 then
+            self:disconnect(0x81)
+            return "malformed packet"
+        end
+
+        self.is_connecting = false
+        self.is_connected = false
+
+        if length > 0 then
+            reason, _ = string.unpack("B", data)
+            if reason ~= 0 then
+                return "disconnect with error"
+            end
+        end
+
+        return "disconnect"
     end
 
     return nil
