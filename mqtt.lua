@@ -158,11 +158,7 @@ function MqttClient:connect (username, password)
         flags = flags | 0x40
     end
 
-    if length > 127 then
-        return "packet size exceeds current implementation capabilities"
-    end
-
-    local data = string.pack("> B B s2 B B I2 B s2", 0x10, length, "MQTT", 5, flags, 0, 0, "")
+    local data = string.char(0x10) .. encodeVarint(length) .. string.pack("> s2 B B I2 B s2", "MQTT", 5, flags, 0, 0, "")
     if username ~= nil then
         data = data .. string.pack("> s2", username)
     end
