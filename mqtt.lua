@@ -119,7 +119,7 @@ function MqttClient:handle ()
 
         if flags ~= 0 then
             self:disconnect(0x81)
-            return "malformed packet"
+            return "invalid flags"
         end
 
         if reason > 127 then
@@ -130,7 +130,7 @@ function MqttClient:handle ()
             return "connection closed by server"
         elseif reason ~= 0 then
             self:disconnect(0x81)
-            return "malformed packet"
+            return "unrecognized reason"
         end
 
         self.is_connecting = false
