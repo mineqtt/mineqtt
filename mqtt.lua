@@ -43,6 +43,8 @@ function MqttClient:new (conn)
     self.__index = self
 
     conn.read_varint = read_varint
+    conn:setTimeout(1)
+
     c.conn = conn
     c.is_connecting = false
     c.is_connected = false
