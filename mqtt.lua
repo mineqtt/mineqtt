@@ -142,6 +142,11 @@ function MqttClient:connect (username, password)
         return err
     end
 
+    local _, err = self.conn:flush()
+    if err ~= nil then
+        return err
+    end
+
     self.is_connecting = true
 
     return nil
@@ -159,6 +164,11 @@ function MqttClient:disconnect (reason)
     local data = string.pack("> B B B", 0xE0, 1, reason)
 
     local _, err = self.conn:write(data)
+    if err ~= nil then
+        return err
+    end
+
+    local _, err = self.conn:flush()
     if err ~= nil then
         return err
     end
