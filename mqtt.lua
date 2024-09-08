@@ -1,3 +1,5 @@
+local computer = require("computer")
+
 local mqtt = {}
 
 local safeRead = function (conn, n)
@@ -74,7 +76,7 @@ function MqttClient:new (conn)
 
     conn.readVarint = readVarint
     conn.safeRead = safeRead
-    conn:setTimeout(1)
+    conn:setTimeout(0)
 
     c.conn = conn
     c.is_connecting = false
@@ -89,7 +91,12 @@ function MqttClient:handle ()
     end
 
     local data, err = self.conn:safeRead(2)
+
     if err ~= nil then
+        if (string.find(err, "timeout")) then
+            return nil
+        end
+
         return err
     end
 
@@ -137,8 +144,15 @@ function MqttClient:handle ()
         self.is_connected = true
     elseif ptype & 0xF0 == 0x40 then -- PUBACK
         -- TODO
+    elseif ptype & 0xF0 == 0x90 then -- SUBACK
+        -- TODO
     elseif ptype & 0xF0 == 0xD0 then -- PINGRESP
         -- TODO
+    elseif ptype & 0xF0 == 0x30 then -- PUBLISH
+        local topic, _, next = string.unpack("> s2 B", data)
+        local message = string.sub(data, next)
+
+        computer.pushSignal("mqtt_message", topic, message)
     elseif ptype & 0xF0 == 0xE0 then -- DISCONNECT
         if ptype ~= 0xE0 then
             self:disconnect(0x81)
@@ -217,6 +231,39 @@ function MqttClient:publish (topic, payload)
     local data = string.char(0x30 | flags) .. encodeVarint(length) .. string.pack("> s2 B", topic, 0) .. payload
 
     local _, err = self.conn:write(data)
+    if err ~= nil then
+        return err
+    end
+
+    local _, err = self.conn:flush()
+    if err ~= nil then
+        return err
+    end
+
+    return nil
+end
+
+function MqttClient:subscribe (...)
+    if not (self.is_connecting or self.is_connected) then
+        return "no connection"
+    end
+
+    local count = select('#', ...)
+
+    if count == 0 then
+        return "topic is required"
+    end
+
+    local packet_id = 1
+    local data = string.pack("> I2 B", packet_id, 0)
+
+    for i = 1, count do
+        data = data .. string.pack("> s2 B", select(i, ...), 0)
+    end
+
+    local header = string.char(0x82) .. encodeVarint(#data)
+
+    local _, err = self.conn:write(header .. data)
     if err ~= nil then
         return err
     end
