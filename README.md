@@ -5,7 +5,7 @@
 ### via OPPM
 
 ```
-oppm register lujoga/oppm
+oppm register mineqtt/oppm
 ```
 
 ```
@@ -15,7 +15,7 @@ oppm install mqtt
 ### via interactive Lua shell
 
 ```lua
-local net = require("internet"); local io = require("io"); local f = io.open("/lib/mqtt.lua", "w"); for line in net.request("https://git.luj0ga.de/luca/mineqtt/raw/branch/main/mqtt.lua") do f:write(line) end; f:flush():close()
+local net = require("internet"); local io = require("io"); local f = io.open("/lib/mqtt.lua", "w"); for line in net.request("https://raw.githubusercontent.com/mineqtt/mineqtt/main/mqtt.lua") do f:write(line) end; f:flush():close()
 ```
 
 ## Usage
