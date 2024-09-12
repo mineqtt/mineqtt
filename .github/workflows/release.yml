@@ -1,0 +1,44 @@
+---
+
+name: release
+
+on:
+  push:
+    tags:
+      - v*
+
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone MineQTT source repo
+        uses: actions/checkout@v4
+        with:
+          path: mineqtt
+
+      - name: Clone MineQTT OPPM repo
+        uses: actions/checkout@v4
+        with:
+          repository: mineqtt/oppm
+          ssh-key: ${{ secrets.SSH_KEY }}
+          path: oppm
+
+      - name: Copy mqtt.lua to OPPM repo, commit and push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp mineqtt/mqtt.lua oppm/mqtt/mqtt.lua
+
+          profile="$(curl -s "https://api.github.com/users/$GITHUB_ACTOR")"
+          id="$(echo "$profile" | jq -r .id)"
+          login="$(echo "$profile" | jq -r .login)"
+
+          git config --global user.name "$login"
+          git config --global user.email "$id+$login@users.noreply.github.com"
+
+          cd oppm
+          git commit -a -m "release ${{ github.ref_name }}" --allow-empty
+          git push --force-with-lease origin master
