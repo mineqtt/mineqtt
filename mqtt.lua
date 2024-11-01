@@ -2,7 +2,7 @@ local computer = require("computer")
 
 local mqtt = {}
 
-local safeRead = function (conn, n)
+local safeRead = function(conn, n)
     local success, result, err = pcall(conn.read, conn, n)
     if success then
         return result, err
@@ -11,7 +11,7 @@ local safeRead = function (conn, n)
     return nil, result
 end
 
-local readVarint = function (conn, first_byte)
+local readVarint = function(conn, first_byte)
     local b, data, err
     if first_byte == nil then
         data, err = safeRead(conn, 1)
@@ -44,7 +44,7 @@ local readVarint = function (conn, first_byte)
     return n + (b << s), nil
 end
 
-local encodeVarint = function (n)
+local encodeVarint = function(n)
     if n > 268435455 then
         return nil, "number too large"
     end
@@ -60,7 +60,7 @@ end
 
 local MqttClient = {}
 
-function mqtt.open (address, port)
+function mqtt.open(address, port)
     local conn, err = require("internet").open(address, port)
     if conn == nil then
         return nil, err
@@ -69,7 +69,7 @@ function mqtt.open (address, port)
     return MqttClient:new(conn), nil
 end
 
-function MqttClient:new (conn)
+function MqttClient:new(conn)
     local c = c or {}
     setmetatable(c, self)
     self.__index = self
@@ -85,7 +85,7 @@ function MqttClient:new (conn)
     return c
 end
 
-function MqttClient:handle ()
+function MqttClient:handle()
     if not (self.is_connecting or self.is_connected) then
         return "no connection"
     end
@@ -191,7 +191,7 @@ function MqttClient:handleAll()
     end
 end
 
-function MqttClient:connect (username, password)
+function MqttClient:connect(username, password)
     if self.is_connecting or self.is_connected then
         return "already connected"
     end
@@ -230,7 +230,7 @@ function MqttClient:connect (username, password)
     return nil
 end
 
-function MqttClient:publish (topic, payload)
+function MqttClient:publish(topic, payload)
     if not (self.is_connecting or self.is_connected) then
         return "no connection"
     end
@@ -259,7 +259,7 @@ function MqttClient:publish (topic, payload)
     return nil
 end
 
-function MqttClient:subscribe (...)
+function MqttClient:subscribe(...)
     if not (self.is_connecting or self.is_connected) then
         return "no connection"
     end
@@ -292,7 +292,7 @@ function MqttClient:subscribe (...)
     return nil
 end
 
-function MqttClient:disconnect (reason)
+function MqttClient:disconnect(reason)
     if not (self.is_connecting or self.is_connected) then
         return "no connection"
     end
