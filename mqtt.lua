@@ -142,26 +142,26 @@ function MqttClient:handle()
 
         self.is_connecting = false
         self.is_connected = true
-        return "connack"
+        return nil, "connack"
     elseif ptype & 0xF0 == 0x40 then -- PUBACK
         -- TODO
-        return "puback"
+        return nil, "puback"
     elseif ptype & 0xF0 == 0x90 then -- SUBACK
         -- TODO
-        return "suback"
+        return nil, "suback"
     elseif ptype & 0xF0 == 0xD0 then -- PINGRESP
         -- TODO
-        return "pingresp"
+        return nil, "pingresp"
     elseif ptype & 0xF0 == 0x30 then -- PUBLISH
         local topic, _, next = string.unpack("> s2 B", data)
         local message = string.sub(data, next)
 
         computer.pushSignal("mqtt_message", topic, message)
-        return "publish"
+        return nil, "publish"
     elseif ptype & 0xF0 == 0xE0 then -- DISCONNECT
         if ptype ~= 0xE0 then
             self:disconnect(0x81)
-            return "malformed packet"
+            return "malformed packet", nil
         end
 
         self.is_connecting = false
@@ -174,21 +174,25 @@ function MqttClient:handle()
             end
         end
 
-        return "disconnect"
+        return "disconnect", "disconnect"
     end
 
-    return nil
+    return nil, nil
 end
 
 function MqttClient:handleAll()
-    local result = nil
+    local err, result
 
     while true do
-        result = self:handle()
+        err, result = self:handle()
+        if err ~= nil then
+            return err
+        end
         if not result then
             break
         end
     end
+    return nil
 end
 
 function MqttClient:connect(username, password)
